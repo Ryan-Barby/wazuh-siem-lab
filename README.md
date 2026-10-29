@@ -36,6 +36,9 @@ The installation required troubleshooting in several areas:
 - **Port conflicts:** Processes left behind by a partial installation occupied ports `1515` and `55000`, preventing a subsequent installation attempt.
 - **Package removal:** The remaining `wazuh-manager` package had broken removal scripts following the partial rollback. Clearing the damaged package state allowed installation to proceed.
 
+![Wazuh installer port collision and package removal errors](screenshots/01-installer-troubleshooting.png)
+*Figure 1: The Wazuh all-in-one installer halting due to active port collisions on 1515/55000 and incomplete package removal from a prior attempt.*
+
 After resolving these issues, I confirmed that `wazuh-manager`, `wazuh-indexer`, `filebeat` and `wazuh-dashboard` were active.
 
 I accessed the dashboard from Windows through VirtualBox NAT port forwarding, mapping host TCP port `8443` to guest TCP port `443`.
@@ -43,6 +46,9 @@ I accessed the dashboard from Windows through VirtualBox NAT port forwarding, ma
 These steps reinforced the distinction between installing software, confirming that its services are running, and validating that useful endpoint data reaches the investigation interface.
 
 ### Security Monitoring Exercises
+
+![Chronological list of Windows security alerts in Wazuh](screenshots/02-security-alerts-overview.png)
+*Figure 2: Event stream in Wazuh dashboard showing captured logon failures, account creation, and group modifications from the Windows endpoint.*
 
 #### 1. Failed Logons — Windows Event ID 4625
 
@@ -76,6 +82,12 @@ The verified result included:
 - The local Administrators group as the affected group.
 - Wazuh rule `60154`, with an alert level of `12`.
 - A member SID rather than a resolved account name.
+
+![Wazuh Rule 60154 Document Details](screenshots/03-administrators-group-rule.png)
+*Figure 3: Wazuh Rule 60154 trigger details (Level 12) mapped to MITRE ATT&CK T1484.*
+
+![Windows Event ID 4733 Document Details](screenshots/04-event-4733-details.png)
+*Figure 4: Windows Security Event 4733 log details preserving the member SID ending in -1002.*
 
 **Result:** Wazuh surfaced the group-membership removal, allowing me to inspect the underlying event details.
 
